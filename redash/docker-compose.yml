@@ -1,0 +1,86 @@
+version: "2"
+
+x-redash-service: &redash-service
+  image: redash/redash:8.0.0.b32245
+  depends_on:
+    - postgres  # Tambahkan dependency PostgreSQL
+    - redis
+  env_file: .env
+  restart: always
+
+services:
+  postgres:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: redash
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: redash
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:5.0-alpine
+    restart: always
+
+  mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ./mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    restart: always
+
+  server:
+    <<: *redash-service
+    command: server
+    ports:
+      - "5000:5000"
+    environment:
+      REDASH_WEB_WORKERS: 4
+      MONGO_URI: ${MONGO_URI}
+      REDASH_DATABASE_URL: postgres://redash:password@postgres:5432/redash  # Konfigurasi PostgreSQL
+
+  scheduler:
+    <<: *redash-service
+    command: scheduler
+    environment:
+      QUEUES: "celery"
+      WORKERS_COUNT: 1
+      REDASH_DATABASE_URL: postgres://redash:password@postgres:5432/redash
+
+  scheduled_worker:
+    <<: *redash-service
+    command: worker
+    environment:
+      QUEUES: "scheduled_queries,schemas"
+      WORKERS_COUNT: 1
+      REDASH_DATABASE_URL: postgres://redash:password@postgres:5432/redash
+
+  adhoc_worker:
+    <<: *redash-service
+    command: worker
+    environment:
+      QUEUES: "queries"
+      WORKERS_COUNT: 2
+      REDASH_DATABASE_URL: postgres://redash:password@postgres:5432/redash
+
+  nginx:
+    image: redash/nginx:latest
+    ports:
+      - "3500:80"
+    depends_on:
+      - server
+    links:
+      - server:redash
+    restart: always
+
+volumes:
+  postgres-data:
+    driver: local
+  mongo-data:
+    driver: local
