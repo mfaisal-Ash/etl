@@ -15,6 +15,7 @@ default_args={
 with DAG(
 
     dag_id="PythonOperatorDemo",
+    start_date=datetime(2021, 9, 6),
     default_args=default_args,
     schedule_interval=None,
     # catchup=False,

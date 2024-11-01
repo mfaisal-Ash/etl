@@ -1,0 +1,5 @@
+dbt==1.8.8
+pandas
+numpy
+polars
+pydantic
