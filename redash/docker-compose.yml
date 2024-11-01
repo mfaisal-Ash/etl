@@ -43,7 +43,7 @@ services:
     environment:
       REDASH_WEB_WORKERS: 4
       MONGO_URI: ${MONGO_URI}
-      REDASH_DATABASE_URL: postgres://redash:password@postgres:5432/redash  # Konfigurasi PostgreSQL
+      REDASH_DATABASE_URL: postgres://redash:password@postgres:5432/redash  
 
   scheduler:
     <<: *redash-service
