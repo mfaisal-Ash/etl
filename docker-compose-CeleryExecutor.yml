@@ -11,20 +11,9 @@ services:
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
         # Uncomment these lines to persist data on the local filesystem.
+        #     - PGDATA=/var/lib/postgresql/data/pgdata
         # volumes:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
-
-    mongo:
-        image: mongo:4.0
-        environment:
-            - MONGO_INITDB_ROOT_USERNAME=faisalTampan
-            - MONGO_INITDB_ROOT_PASSWORD=9byL9bOl3rhqbSrO
-            - MONGO_INITDB_DATABASE=airflow
-        # Uncomment these lines to persist data on the local filesystem.
-        volumes:
-            - mongo-data:/data/db
-        ports:
-            - "27017:27017"
 
     webserver:
         image: puckel/docker-airflow:1.10.9
@@ -32,14 +21,18 @@ services:
         depends_on:
             - postgres
             - redis
-            - mongo
         environment:
             - LOAD_EX=n
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            - MONGO_URI=mongodb://admin:admin@mongo:27017/airflow  # Tambahkan URI MongoDB
+            # - POSTGRES_USER=airflow
+            # - POSTGRES_PASSWORD=airflow
+            # - POSTGRES_DB=airflow
+            # - REDIS_PASSWORD=redispass
         volumes:
             - ./dags:/usr/local/airflow/dags
+            # Uncomment to include custom plugins
+            # - ./plugins:/usr/local/airflow/plugins
         ports:
             - "8080:8080"
         command: webserver
@@ -56,7 +49,7 @@ services:
             - redis
         environment:
             - EXECUTOR=Celery
-            - MONGO_URI=mongodb+srv://faisalTampan:9byL9bOl3rhqbSrO@soren.uwshwr6.mongodb.net/test  # Tambahkan URI MongoDB
+            # - REDIS_PASSWORD=redispass
         ports:
             - "5555:5555"
         command: flower
@@ -68,11 +61,16 @@ services:
             - webserver
         volumes:
             - ./dags:/usr/local/airflow/dags
+            # Uncomment to include custom plugins
+            # - ./plugins:/usr/local/airflow/plugins
         environment:
             - LOAD_EX=n
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            - MONGO_URI=mongodb+srv://faisalTampan:9byL9bOl3rhqbSrO@soren.uwshwr6.mongodb.net/test  # Tambahkan URI MongoDB
+            # - POSTGRES_USER=airflow
+            # - POSTGRES_PASSWORD=airflow
+            # - POSTGRES_DB=airflow
+            # - REDIS_PASSWORD=redispass
         command: scheduler
 
     worker:
@@ -82,12 +80,13 @@ services:
             - scheduler
         volumes:
             - ./dags:/usr/local/airflow/dags
+            # Uncomment to include custom plugins
+            # - ./plugins:/usr/local/airflow/plugins
         environment:
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            - MONGO_URI=mongodb+srv://faisalTampan:9byL9bOl3rhqbSrO@soren.uwshwr6.mongodb.net/test  # Tambahkan URI MongoDB
+            # - POSTGRES_USER=airflow
+            # - POSTGRES_PASSWORD=airflow
+            # - POSTGRES_DB=airflow
+            # - REDIS_PASSWORD=redispass
         command: worker
-
-volumes:
-    mongo-data:
-        driver: local

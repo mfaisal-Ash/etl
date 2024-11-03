@@ -10,35 +10,15 @@ services:
             options:
                 max-size: 10m
                 max-file: "3"
-        volumes:
-            - postgres-data:/var/lib/postgresql/data
-        ports:
-            - "5432:5432"
-
-    mongo:
-        image: mongo:latest
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: password
-        logging:
-            options:
-                max-size: 10m
-                max-file: "3"
-        volumes:
-            - mongo-data:/data/db
-        ports:
-            - "27017:27017"
 
     webserver:
         image: puckel/docker-airflow:1.10.9
         restart: always
         depends_on:
             - postgres
-            - mongo
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
-            - MONGO_URI=mongodb://root:password@mongo:27017  # Tambahkan URI MongoDB jika diperlukan
         logging:
             options:
                 max-size: 10m
@@ -54,9 +34,3 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
-
-volumes:
-    postgres-data:
-        driver: local
-    mongo-data:
-        driver: local
