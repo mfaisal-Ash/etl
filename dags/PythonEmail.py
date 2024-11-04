@@ -15,8 +15,7 @@ default_args = {
 with DAG(
     dag_id='PythonDemoEmail',
     default_args=default_args,
-    schedule_interval=None,
-) as dag:
+    schedule_interval=None) as dag:
 
     start_dag = PythonOperator(
         task_id='start_dag',
